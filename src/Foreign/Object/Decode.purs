@@ -52,7 +52,7 @@ renderError = gatherContext [] >>> case _ of
       Tuple context error
 
     Foreign.TypeMismatch expected got ->
-      Tuple context ("type mismatch, expecting " <> expected <> " but got " <> got)
+      Tuple context ("type mismatch, expected " <> expected <> " but got " <> got)
 
     Foreign.ErrorAtIndex i error ->
       gatherContext (Array.snoc context ("[" <> show i <> "]")) error
@@ -145,6 +145,21 @@ instance decodeValueMaybe :: DecodeValue a => DecodeValue (Maybe a) where
   decodeValue = Foreign.readNullOrUndefined >=> maybe (pure Nothing) decodeValue
 
 instance decodeValueRecord :: DecodeRow row => DecodeValue (Record row) where
-  decodeValue value
-    | Foreign.typeOf value == "object" = flip Builder.build {} <$> decodeRow (RProxy :: RProxy row) (Foreign.unsafeFromForeign value)
-    | otherwise = Foreign.fail (Foreign.TypeMismatch "object" (Foreign.typeOf value))
+  decodeValue value =
+    let valueType = Foreign.typeOf value in
+    if valueType == "object"
+       then flip Builder.build {} <$> decodeRow (RProxy :: RProxy row) (Foreign.unsafeFromForeign value)
+       else Foreign.fail (Foreign.TypeMismatch "object" valueType)
+
+instance decodeValueArrow :: DecodeValue (a -> b) where
+  decodeValue value =
+    let valueType = Foreign.typeOf value in
+    if valueType == "function" && numArgs value == 1
+       then pure (Foreign.unsafeFromForeign value)
+       else Foreign.fail (Foreign.TypeMismatch "function taking one argument" valueType)
+
+-- TODO: Curried functions
+-- TODO: Effect a
+-- TODO: Curried Effect functions
+
+foreign import numArgs :: Foreign -> Int
