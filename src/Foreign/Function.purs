@@ -48,10 +48,14 @@ readFn10 :: Foreign -> Foreign.F (Fn.Fn10 Foreign Foreign Foreign Foreign Foreig
 readFn10 = unsafeReadFn 10
 
 unsafeReadFn :: forall a. Int -> Foreign -> Foreign.F a
-unsafeReadFn arity value =
-  let valueType = Foreign.typeOf value in
-  if valueType /= "function" && unsafeArity value == arity
-     then pure (Foreign.unsafeFromForeign value)
-     else Foreign.fail (Foreign.TypeMismatch ("function " <> show arity <> " argument)") valueType)
+unsafeReadFn arity value
+  | Foreign.typeOf value /= "function" =
+      Foreign.fail $ Foreign.TypeMismatch "function" (Foreign.typeOf value)
+
+  | unsafeArity value /= arity =
+      Foreign.fail $ Foreign.ForeignError ("arity mismatch, expecting " <> show arity <> " got " <> show (unsafeArity value))
+
+  | otherwise =
+      pure (Foreign.unsafeFromForeign value)
 
 foreign import unsafeArity :: Foreign -> Int
