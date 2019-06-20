@@ -14,6 +14,7 @@ import Control.Monad.Except (runExcept, withExcept)
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (intercalate)
+import Data.Function.Uncurried as Fn
 import Data.List.NonEmpty (NonEmptyList)
 import Data.List.NonEmpty as NonEmptyList
 import Data.Maybe (Maybe(..), maybe)
@@ -166,5 +167,13 @@ instance decodeValueRecord :: DecodeRow row => DecodeValue (Record row) where
        then flip Builder.build {} <$> decodeRow (RProxy :: RProxy row) (Foreign.unsafeFromForeign value)
        else Foreign.fail (Foreign.TypeMismatch "object" valueType)
 
-instance decodeValueArrow :: DecodeValue (Foreign -> Foreign) where
-  decodeValue = Foreign.Function.readFn1
+instance decodeValueFn1  :: DecodeValue (Foreign -> Foreign) where decodeValue = Foreign.Function.readFn1
+instance decodeValueFn2  :: DecodeValue (Fn.Fn2 Foreign Foreign Foreign) where decodeValue = Foreign.Function.readFn2
+instance decodeValueFn3  :: DecodeValue (Fn.Fn3 Foreign Foreign Foreign Foreign) where decodeValue = Foreign.Function.readFn3
+instance decodeValueFn4  :: DecodeValue (Fn.Fn4 Foreign Foreign Foreign Foreign Foreign) where decodeValue = Foreign.Function.readFn4
+instance decodeValueFn5  :: DecodeValue (Fn.Fn5 Foreign Foreign Foreign Foreign Foreign Foreign) where decodeValue = Foreign.Function.readFn5
+instance decodeValueFn6  :: DecodeValue (Fn.Fn6 Foreign Foreign Foreign Foreign Foreign Foreign Foreign) where decodeValue = Foreign.Function.readFn6
+instance decodeValueFn7  :: DecodeValue (Fn.Fn7 Foreign Foreign Foreign Foreign Foreign Foreign Foreign Foreign) where decodeValue = Foreign.Function.readFn7
+instance decodeValueFn8  :: DecodeValue (Fn.Fn8 Foreign Foreign Foreign Foreign Foreign Foreign Foreign Foreign Foreign) where decodeValue = Foreign.Function.readFn8
+instance decodeValueFn9  :: DecodeValue (Fn.Fn9 Foreign Foreign Foreign Foreign Foreign Foreign Foreign Foreign Foreign Foreign) where decodeValue = Foreign.Function.readFn9
+instance decodeValueFn10 :: DecodeValue (Fn.Fn10 Foreign Foreign Foreign Foreign Foreign Foreign Foreign Foreign Foreign Foreign Foreign) where decodeValue = Foreign.Function.readFn10
