@@ -22,6 +22,7 @@ import Foreign (Foreign)
 import Foreign as Foreign
 import Foreign.Object (Object)
 import Foreign.Object as Object
+import Foreign.Function as Foreign.Function
 import Prim.Row (class Cons, class Lacks)
 import Record.Builder (Builder)
 import Record.Builder as Builder
@@ -151,15 +152,5 @@ instance decodeValueRecord :: DecodeRow row => DecodeValue (Record row) where
        then flip Builder.build {} <$> decodeRow (RProxy :: RProxy row) (Foreign.unsafeFromForeign value)
        else Foreign.fail (Foreign.TypeMismatch "object" valueType)
 
-instance decodeValueArrow :: DecodeValue (a -> b) where
-  decodeValue value =
-    let valueType = Foreign.typeOf value in
-    if valueType == "function" && numArgs value == 1
-       then pure (Foreign.unsafeFromForeign value)
-       else Foreign.fail (Foreign.TypeMismatch "function taking one argument" valueType)
-
--- TODO: Curried functions
--- TODO: Effect a
--- TODO: Curried Effect functions
-
-foreign import numArgs :: Foreign -> Int
+instance decodeValueArrow :: DecodeValue (Foreign -> Foreign) where
+  decodeValue = Foreign.Function.readFn1
