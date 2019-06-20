@@ -1,5 +1,6 @@
 module Foreign.Object.Decode
-  ( decodeObject
+  ( decodeForeign
+  , decodeObject
   , class DecodeValue, decodeValue
 
   -- (exported for compiler visibility)
@@ -14,20 +15,33 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.Foldable (intercalate)
 import Data.List.NonEmpty (NonEmptyList)
+import Data.List.NonEmpty as NonEmptyList
 import Data.Maybe (Maybe(..), maybe)
 import Data.Symbol (SProxy(..), class IsSymbol, reflectSymbol)
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import Foreign (Foreign)
 import Foreign as Foreign
+import Foreign.Function as Foreign.Function
 import Foreign.Object (Object)
 import Foreign.Object as Object
-import Foreign.Function as Foreign.Function
 import Prim.Row (class Cons, class Lacks)
 import Record.Builder (Builder)
 import Record.Builder as Builder
 import Type.Data.Row (RProxy(..))
 import Type.RowList (class ListToRow, class RowToList, Cons, Nil, RLProxy(..), kind RowList)
+
+decodeForeign
+  :: forall row
+   . DecodeRow row
+  => Foreign
+  -> Either (NonEmptyList String) (Record row)
+decodeForeign value =
+  let valueType = Foreign.typeOf value in
+  if valueType /= "object"
+     then let error = Foreign.TypeMismatch "object" valueType in
+          Left (NonEmptyList.singleton (renderError error))
+     else decodeObject (Foreign.unsafeFromForeign value)
 
 -- | TODO
 decodeObject
