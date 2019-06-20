@@ -13,9 +13,9 @@ module Foreign.Function
 
 import Prelude
 
+import Data.Function.Uncurried as Fn
 import Foreign (Foreign)
 import Foreign as Foreign
-import Data.Function.Uncurried as Fn
 
 readFn1 :: Foreign -> Foreign.F (Fn.Fn1 Foreign Foreign)
 readFn1 = unsafeReadFn 1

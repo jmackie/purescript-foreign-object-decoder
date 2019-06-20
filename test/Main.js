@@ -1,11 +1,5 @@
 "use-strict";
 
-exports.good = {
-  x: 2,
-  y: function(foo) {
-    return foo;
-  },
-  z: { zz: true }
-};
+exports.exampleA = { x: 2 };
 
-exports.bad = { x: 2, y: "foo", z: { zz: true } };
+exports.exampleB = { a: "string", b: "c", c: true, d: 200.0, e: 200 };
