@@ -3,7 +3,6 @@ module Foreign.Object.Decode
   , decodeObject
   , class DecodeValue, decodeValue
 
-  -- (exported for compiler visibility)
   , class DecodeRow, decodeRow
   , class DecodeRowList, decodeRowList
   ) where
@@ -32,6 +31,9 @@ import Record.Builder as Builder
 import Type.Data.Row (RProxy(..))
 import Type.RowList (class ListToRow, class RowToList, Cons, Nil, RLProxy(..), kind RowList)
 
+-- | Attempt to decode a javascript value into a record type, provided all the fields
+-- | of the record can be decoded from javascript values (i.e. the `DecodeRow`
+-- | constraint).
 decodeForeign
   :: forall row
    . DecodeRow row
@@ -44,7 +46,9 @@ decodeForeign value =
           Left (NonEmptyList.singleton (renderError error))
      else decodeObject (Foreign.unsafeFromForeign value)
 
--- | TODO
+-- | Attempt to decode a javascript object into a record type, provided all the fields
+-- | of the record can be decoded from javascript values (i.e. the `DecodeRow`
+-- | constraint).
 decodeObject
   :: forall row
    . DecodeRow row
@@ -76,12 +80,16 @@ renderError = gatherContext [] >>> case _ of
     Foreign.ErrorAtProperty key error ->
       gatherContext (Array.snoc context ("." <> key)) error
 
+-- | Class that powers the `decodeForeign` and `decodeObject` functions.
+-- | You can ignore it.
 class DecodeRow (row :: # Type) where
   decodeRow :: RProxy row -> Object Foreign -> Foreign.F (Builder {} (Record row))
 
 instance decodeRowImpl :: (RowToList row list, DecodeRowList list row) => DecodeRow row where
   decodeRow _ = decodeRowList (RLProxy :: RLProxy list)
 
+-- | Class that powers the `DecodeRow` class, which powers the`decodeForeign`
+-- | and `decodeObject` functions. You can ignore it.
 class ListToRow list row <= DecodeRowList (list :: RowList) row where
   decodeRowList :: RLProxy list -> Object Foreign -> Foreign.F (Builder {} (Record row))
 
@@ -144,7 +152,10 @@ instance decodeRowListCons
     labelProxy :: SProxy label
     labelProxy = SProxy
 
--- | How to decode an object property value.
+-- | Classy `read*` functions.
+-- |
+-- | In order to be an instance of `DecodeRow`, all fields of a record must have
+-- | instances of `DecodeValue`.
 class DecodeValue a where
   decodeValue :: Foreign -> Foreign.F a
 
